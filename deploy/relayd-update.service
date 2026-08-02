@@ -1,0 +1,10 @@
+[Unit]
+Description=Check for and install relayd updates
+Documentation=https://github.com/overkill-cc/ble-relay-server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+# Runs as root: it writes to /opt/relayd/bin and drives systemctl.
+ExecStart=/opt/relayd/bin/relayd-update.sh

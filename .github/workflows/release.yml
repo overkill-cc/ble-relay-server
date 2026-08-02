@@ -9,10 +9,10 @@ on:
 permissions:
   contents: write
 
-# A newer push to the same ref supersedes an in-flight build.
+# Releases are permanent, so never cancel a run that may already be publishing.
 concurrency:
   group: release-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   test:
@@ -36,26 +36,19 @@ jobs:
           go-version-file: go.mod
           cache: true
 
-      # Tag pushes become permanent versioned releases; pushes to main refresh
-      # a single rolling "nightly" prerelease instead of piling up one release
-      # per commit.
+      # Every build becomes a normal, permanent release. Hand-pushed v* tags
+      # keep their own name; pushes to main get a dated build version, which
+      # sorts chronologically and never collides with a hand-cut semver tag.
       - name: Determine version
         id: version
         run: |
           set -euo pipefail
           if [ "$GITHUB_REF_TYPE" = tag ]; then
-            {
-              echo "version=$GITHUB_REF_NAME"
-              echo "tag=$GITHUB_REF_NAME"
-              echo "rolling=false"
-            } >> "$GITHUB_OUTPUT"
+            version="$GITHUB_REF_NAME"
           else
-            {
-              echo "version=nightly-$(git rev-parse --short HEAD)"
-              echo "tag=nightly"
-              echo "rolling=true"
-            } >> "$GITHUB_OUTPUT"
+            version="v$(date -u +%Y.%m.%d)-$(git rev-parse --short HEAD)"
           fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
 
       - name: Build
         env:
@@ -89,26 +82,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ steps.version.outputs.version }}
-          TAG: ${{ steps.version.outputs.tag }}
-          ROLLING: ${{ steps.version.outputs.rolling }}
         run: |
           set -euo pipefail
-          if [ "$ROLLING" = true ]; then
-            # Replace rather than upload over the old one, so assets from a
-            # previous commit never linger alongside the current ones.
-            gh release delete "$TAG" --yes --cleanup-tag || true
-            gh release create "$TAG" dist/* \
-              --title "Nightly ($VERSION)" \
-              --target "$GITHUB_SHA" \
-              --prerelease \
-              --notes "Automated build of \`$GITHUB_SHA\` on \`main\`.
-
-          This release is replaced on every push to \`main\`. Use a tagged
-          release for anything you intend to keep running.
-
-          Verify a download with \`sha256sum -c SHA256SUMS\`."
-          else
-            gh release create "$TAG" dist/* \
-              --title "$VERSION" \
-              --generate-notes
-          fi
+          # --target creates the tag on this commit when the build came from a
+          # branch push; for a tag push the tag already exists and is reused.
+          gh release create "$VERSION" dist/* \
+            --title "$VERSION" \
+            --target "$GITHUB_SHA" \
+            --generate-notes
