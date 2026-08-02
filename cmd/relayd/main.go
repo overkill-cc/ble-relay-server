@@ -5,7 +5,6 @@ package main
 
 import (
 	"context"
-	_ "embed"
 	"flag"
 	"log"
 	"net/http"
@@ -13,11 +12,9 @@ import (
 	"syscall"
 	"time"
 
+	blerelay "github.com/overkill-cc/ble-relay-server"
 	"github.com/overkill-cc/ble-relay-server/internal/wsserver"
 )
-
-//go:embed privacy_policy.html
-var privacyPolicyHTML []byte
 
 func main() {
 	addr := flag.String("addr", ":8443", "listen address")
@@ -30,7 +27,7 @@ func main() {
 		log.Fatal("relayd: -tls-cert and -tls-key are required (or pass -insecure-http for local dev only)")
 	}
 
-	srv := wsserver.NewServer(privacyPolicyHTML)
+	srv := wsserver.NewServer(blerelay.PrivacyPolicyHTML)
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()

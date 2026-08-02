@@ -75,9 +75,14 @@ precisely enough to reimplement the client side from scratch in any language.
 
 ## Privacy policy
 
-`cmd/relayd/privacy_policy.html` is served by this server as the app's public
-privacy-policy URL (required by the Play Store listing). Its source of truth is
-`PRIVACY_POLICY.md` in the app repo — keep the two in sync when either changes.
+[`privacy_policy.html`](privacy_policy.html) is served by this server as the
+app's public privacy-policy URL (required by the Play Store listing). It is
+embedded into the binary by [`privacy.go`](privacy.go) — `go:embed` cannot
+reach outside its own package directory, which is why the embed lives at the
+root rather than in `cmd/relayd`.
+
+Its source of truth is `PRIVACY_POLICY.md` in the app repo — keep the two in
+sync when either changes.
 
 ## License
 
