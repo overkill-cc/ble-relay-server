@@ -1,0 +1,13 @@
+# Compiled binaries
+/relayd
+/relayd-*
+*.exe
+
+# Test/coverage output
+*.out
+*.test
+
+# TLS material — never commit keys or certs
+*.pem
+*.key
+*.crt
