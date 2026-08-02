@@ -19,7 +19,7 @@ import (
 // read_request/read_response round-trips through the broker exactly as a
 // real GATT read would.
 func TestEndToEndHostClientRelay(t *testing.T) {
-	srv := NewServer(nil)
+	srv := NewServer()
 	ts := httptest.NewServer(srv.Routes())
 	defer ts.Close()
 	wsBase := "ws" + strings.TrimPrefix(ts.URL, "http")
@@ -128,7 +128,7 @@ func TestEndToEndHostClientRelay(t *testing.T) {
 // TestUsernameCollisionSuffixing verifies two hosts registering the same
 // desired name get suffixed usernames.
 func TestUsernameCollisionSuffixing(t *testing.T) {
-	srv := NewServer(nil)
+	srv := NewServer()
 	ts := httptest.NewServer(srv.Routes())
 	defer ts.Close()
 	wsBase := "ws" + strings.TrimPrefix(ts.URL, "http")

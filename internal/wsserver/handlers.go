@@ -35,17 +35,15 @@ const (
 // and broker. It knows the wire protocol's control-message shapes; anything
 // past the handshake is routed opaquely by the broker package.
 type Server struct {
-	registry          *session.Registry
-	limiter           *ratelimit.Limiter
-	privacyPolicyHTML []byte
+	registry *session.Registry
+	limiter  *ratelimit.Limiter
 }
 
-func NewServer(privacyPolicyHTML []byte) *Server {
+func NewServer() *Server {
 	return &Server{
 		registry: session.NewRegistry(),
 		// 5 failed attempts per minute per IP, then a 5 minute cooldown.
-		limiter:           ratelimit.New(5, time.Minute, 5*time.Minute),
-		privacyPolicyHTML: privacyPolicyHTML,
+		limiter: ratelimit.New(5, time.Minute, 5*time.Minute),
 	}
 }
 
@@ -54,18 +52,12 @@ func (s *Server) Routes() *http.ServeMux {
 	mux.HandleFunc("/ws/host", s.HandleHost)
 	mux.HandleFunc("/ws/client", s.HandleClient)
 	mux.HandleFunc("/healthz", s.HandleHealth)
-	mux.HandleFunc("/privacy", s.HandlePrivacyPolicy)
 	return mux
 }
 
 func (s *Server) HandleHealth(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write([]byte("ok"))
-}
-
-func (s *Server) HandlePrivacyPolicy(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	_, _ = w.Write(s.privacyPolicyHTML)
 }
 
 // StartReaper runs the idle/grace-expiry sweep until ctx is cancelled.
