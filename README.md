@@ -16,6 +16,19 @@ between them.
 routed opaquely — it has no idea what "GATT" is, that semantics lives entirely
 in the apps on both ends.
 
+## Install
+
+Prebuilt binaries for Linux (amd64/arm64/armv7), macOS (amd64/arm64) and
+Windows (amd64) are attached to every [release](../../releases). Each release
+ships a `SHA256SUMS` file — verify a download with:
+
+```sh
+sha256sum -c SHA256SUMS
+```
+
+Tagged releases (`v*`) are permanent. The `nightly` prerelease is rebuilt on
+every push to `main` and replaced each time — don't pin to it.
+
 ## Build
 
 ```sh

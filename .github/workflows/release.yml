@@ -1,0 +1,114 @@
+name: Build and release
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+# A newer push to the same ref supersedes an in-flight build.
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+      - run: go vet ./...
+      - run: go test -race ./...
+
+  release:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      # Tag pushes become permanent versioned releases; pushes to main refresh
+      # a single rolling "nightly" prerelease instead of piling up one release
+      # per commit.
+      - name: Determine version
+        id: version
+        run: |
+          set -euo pipefail
+          if [ "$GITHUB_REF_TYPE" = tag ]; then
+            {
+              echo "version=$GITHUB_REF_NAME"
+              echo "tag=$GITHUB_REF_NAME"
+              echo "rolling=false"
+            } >> "$GITHUB_OUTPUT"
+          else
+            {
+              echo "version=nightly-$(git rev-parse --short HEAD)"
+              echo "tag=nightly"
+              echo "rolling=true"
+            } >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          for platform in linux/amd64 linux/arm64 linux/arm darwin/amd64 darwin/arm64 windows/amd64; do
+            goos=${platform%/*}
+            goarch=${platform#*/}
+            binary=relayd
+            [ "$goos" = windows ] && binary=relayd.exe
+
+            echo "==> $goos/$goarch"
+            rm -rf build && mkdir build
+            CGO_ENABLED=0 GOOS=$goos GOARCH=$goarch GOARM=7 \
+              go build -trimpath -ldflags='-s -w' -o "build/$binary" ./cmd/relayd
+
+            archive="relayd_${VERSION}_${goos}_${goarch}"
+            if [ "$goos" = windows ]; then
+              (cd build && zip -q "../dist/${archive}.zip" "$binary")
+            else
+              tar -czf "dist/${archive}.tar.gz" -C build "$binary"
+            fi
+          done
+          # Match the archives explicitly so SHA256SUMS can never list itself.
+          (cd dist && sha256sum relayd_* > SHA256SUMS)
+          ls -l dist
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+          TAG: ${{ steps.version.outputs.tag }}
+          ROLLING: ${{ steps.version.outputs.rolling }}
+        run: |
+          set -euo pipefail
+          if [ "$ROLLING" = true ]; then
+            # Replace rather than upload over the old one, so assets from a
+            # previous commit never linger alongside the current ones.
+            gh release delete "$TAG" --yes --cleanup-tag || true
+            gh release create "$TAG" dist/* \
+              --title "Nightly ($VERSION)" \
+              --target "$GITHUB_SHA" \
+              --prerelease \
+              --notes "Automated build of \`$GITHUB_SHA\` on \`main\`.
+
+          This release is replaced on every push to \`main\`. Use a tagged
+          release for anything you intend to keep running.
+
+          Verify a download with \`sha256sum -c SHA256SUMS\`."
+          else
+            gh release create "$TAG" dist/* \
+              --title "$VERSION" \
+              --generate-notes
+          fi
