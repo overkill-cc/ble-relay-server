@@ -12,7 +12,6 @@ import (
 	"syscall"
 	"time"
 
-	blerelay "github.com/overkill-cc/ble-relay-server"
 	"github.com/overkill-cc/ble-relay-server/internal/wsserver"
 )
 
@@ -27,7 +26,7 @@ func main() {
 		log.Fatal("relayd: -tls-cert and -tls-key are required (or pass -insecure-http for local dev only)")
 	}
 
-	srv := wsserver.NewServer(blerelay.PrivacyPolicyHTML)
+	srv := wsserver.NewServer()
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
