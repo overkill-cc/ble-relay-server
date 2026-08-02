@@ -1,0 +1,15 @@
+[Unit]
+Description=Periodically check for relayd updates
+Documentation=https://github.com/overkill-cc/ble-relay-server
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=5min
+# Spreads load if several servers run this, and avoids every host hitting
+# GitHub on the same second.
+RandomizedDelaySec=60s
+# Catch up on a check missed while the machine was off.
+Persistent=true
+
+[Install]
+WantedBy=timers.target

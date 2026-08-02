@@ -26,8 +26,18 @@ ships a `SHA256SUMS` file — verify a download with:
 sha256sum -c SHA256SUMS
 ```
 
-Tagged releases (`v*`) are permanent. The `nightly` prerelease is rebuilt on
-every push to `main` and replaced each time — don't pin to it.
+Every push to `main` publishes a release versioned `vYYYY.MM.DD-<commit>`;
+hand-pushed `v*` tags publish under their own name.
+
+## Deploy
+
+[`deploy/`](deploy/) sets up `relayd` as a hardened systemd service on a Linux
+server, with a timer that installs each new release automatically and rolls
+back if the service fails to start. See [deploy/README.md](deploy/README.md).
+
+```sh
+sudo ./deploy/install.sh
+```
 
 ## Build
 
