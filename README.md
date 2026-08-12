@@ -1,9 +1,8 @@
 # BLE Relay — relay server (`relayd`)
 
-The WebSocket relay server that backs the [BLE Relay](https://blerelay.overkill.cc)
-app. It pairs one **host** device (which owns a real Bluetooth Low Energy
-connection to a peripheral) with N **client** devices, and routes frames
-between them.
+The WebSocket relay server that backs the BLE Relay app. It pairs one **host**
+device (which owns a real Bluetooth Low Energy connection to a peripheral)
+with N **client** devices, and routes frames between them.
 
 ```
 [Host app]  <--WebSocket-->  [relayd]  <--WebSocket-->  [Client app]
@@ -16,10 +15,10 @@ between them.
 routed opaquely — it has no idea what "GATT" is, that semantics lives entirely
 in the apps on both ends.
 
-You can try the API at `blerelay.overkill.cc/api`. **Testing only.** This is a
-shared instance for trying the app out — it can be restarted, rate-limited, or
-wiped without notice, and comes with no uptime guarantee. Don't depend on it
-for anything real; [self-host `relayd` instead](#install).
+You can try the app against `blerelay.overkill.cc`. **Testing only** — this is
+a shared instance that can be restarted, rate-limited, or wiped without
+notice, with no uptime guarantee. Don't depend on it for anything real;
+[self-host `relayd` instead](#install).
 
 ## Install
 

@@ -2,9 +2,9 @@
 
 This document is for implementing a **client** in a different app/codebase that
 connects directly to the relay server (`relayd`, the Go server in this repo)
-over WebSocket, without using the [BLE Relay](https://blerelay.overkill.cc)
-Flutter app at all. It documents the wire protocol precisely enough to
-reimplement the client side from scratch in any language.
+over WebSocket, without using the BLE Relay Flutter app at all. It documents
+the wire protocol precisely enough to reimplement the client side from
+scratch in any language.
 
 If you also need to implement the **host** side (the role that owns a real
 BLE connection and shares it), see the "Host-only messages" section near the
