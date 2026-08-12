@@ -1,7 +1,6 @@
 services:
   relayd:
-    build: .
-    image: ble-relay-server:latest
+    image: ghcr.io/overkill-cc/ble-relay-server:latest
     restart: unless-stopped
     # Bound to localhost only: the host's own cloudflared reaches relayd
     # here, but it's never exposed directly to the public internet — all
