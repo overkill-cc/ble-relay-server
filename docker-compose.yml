@@ -3,20 +3,9 @@ services:
     build: .
     image: ble-relay-server:latest
     restart: unless-stopped
+    # Bound to localhost only: the host's own cloudflared reaches relayd
+    # here, but it's never exposed directly to the public internet — all
+    # public traffic goes through the tunnel, which terminates TLS.
     ports:
-      - "8443:8443"
-    volumes:
-      # Point these at a real certificate for a public deployment, e.g.
-      # certbot's /etc/letsencrypt/live/<domain>/. Mounted read-only.
-      - ./certs:/etc/relayd/tls:ro
-    command:
-      - -addr
-      - :8443
-      - -tls-cert
-      - /etc/relayd/tls/fullchain.pem
-      - -tls-key
-      - /etc/relayd/tls/privkey.pem
-
-    # Local development only — skips the certs volume/command above.
-    # Uncomment to run plain HTTP/WS instead:
-    # command: ["-addr", ":8443", "-insecure-http"]
+      - "127.0.0.1:8443:8443"
+    command: ["-addr", ":8443", "-insecure-http"]
