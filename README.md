@@ -1,6 +1,6 @@
 # BLE Relay — relay server (`relayd`)
 
-The WebSocket relay server that backs the [BLE Relay](https://github.com/overkill-cc/ble-relay)
+The WebSocket relay server that backs the [BLE Relay](https://blerelay.overkill.cc)
 app. It pairs one **host** device (which owns a real Bluetooth Low Energy
 connection to a peripheral) with N **client** devices, and routes frames
 between them.
@@ -16,6 +16,11 @@ between them.
 routed opaquely — it has no idea what "GATT" is, that semantics lives entirely
 in the apps on both ends.
 
+You can try the API at `blerelay.overkill.cc/api`. **Testing only.** This is a
+shared instance for trying the app out — it can be restarted, rate-limited, or
+wiped without notice, and comes with no uptime guarantee. Don't depend on it
+for anything real; [self-host `relayd` instead](#install).
+
 ## Install
 
 Prebuilt binaries for Linux (amd64/arm64/armv7), macOS (amd64/arm64) and
@@ -25,10 +30,6 @@ ships a `SHA256SUMS` file — verify a download with:
 ```sh
 sha256sum -c SHA256SUMS
 ```
-
-Every push to `main` publishes a release versioned `vYYYY.MM.DD-<commit>`;
-hand-pushed `v*` tags publish under their own name.
-
 ## Deploy
 
 [`deploy/`](deploy/) sets up `relayd` as a hardened systemd service on a Linux
@@ -73,14 +74,6 @@ go test ./...
 The wire protocol is documented in [CLIENT_INTEGRATION.md](CLIENT_INTEGRATION.md)
 precisely enough to reimplement the client side from scratch in any language.
 
-## Privacy policy
-
-[`privacy_policy.html`](privacy_policy.html) is the app's privacy policy, kept
-here as a plain file. `relayd` does not serve it — host it wherever the Play
-Store listing points.
-
-Its source of truth is `PRIVACY_POLICY.md` in the app repo — keep the two in
-sync when either changes.
 
 ## License
 
